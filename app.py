@@ -55,7 +55,7 @@ def tutorial():
 
 
 with st.sidebar:
-    st.markdown("Para poder usar el chatbot deberás obtener una clave API de Google Gemini y agregarla debajo:")
+    st.markdown("Para poder usar la herramienta deberás obtener una clave API de Google Gemini y agregarla debajo:")
     gemini_api_key = st.text_input("Gemini API Key", key="chatbot_api_key", type="password")
     if st.button("¿Cómo obtengo la clave API 🤔?"):
         tutorial()
