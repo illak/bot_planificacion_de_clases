@@ -35,6 +35,35 @@ Respuesta:\n
     return prompt
 
 
+
+def get_prompt_struct(area_academica, asignatura, rango_edad, meta):
+    prompt_template = f"""
+Debes generar un listado de 10 posibles temáticas para un curso 
+en el área académica: {area_academica}, para la asignatura {asignatura},
+para alumnos con edad en el rango de {rango_edad}, y la meta de aprendizaje es
+la siguiente: {meta}
+
+El listado debe estar en el siguiente formato:
+
+<listado>
+<item>
+temática 1
+</item>
+<item>
+temática 2
+</item>
+</listado>
+
+Sólo responda con la estructura anterior, no agregue nada ni antes ni después.
+
+Respuesta:\n
+
+"""
+    prompt = PromptTemplate.from_template(prompt_template)
+
+    return prompt
+
+
 def get_temas_chain(prompt, llm):
     chain = (
         prompt
@@ -126,6 +155,37 @@ if st.button("Definir temas del curso") and gemini_api_key:
         print(response)
     else:
         st.error("Todos los campos anteriores son obligatorios!!")
+
+
+if st.button("Definir temas del curso (salida estructurada)") and gemini_api_key:
+    if area_academica and asignatura and rango_edad and meta:
+        llm = ChatGoogleGenerativeAI(
+            model="gemini-1.5-flash",
+            google_api_key=gemini_api_key)
+    
+        prompt = get_prompt_struct(area_academica, asignatura, rango_edad, meta)
+        temas_chain = get_temas_chain(prompt, llm)
+        
+        with st.spinner('Estoy procesando los datos y generando posibles temas... aguarde por favor.'):
+            response = temas_chain.invoke({})
+            # Expresión regular para extraer contenido entre <item> y </item>
+            items = re.findall(r'<item>\s*(.*?)\s*</item>', response)
+
+            # Mostrar los resultados
+            print(items)
+            
+        choice = st.radio(
+            "La IA Generativa le sugiere estos otros temas",
+            items,
+            index=None
+        )
+
+        if choice:
+            st.write("Usted seleccionó: " + choice)
+
+    else:
+        st.error("Todos los campos anteriores son obligatorios!!")
+
 
 if not gemini_api_key:
     st.info("Por favor agregue su clave API de Google Gemini.")
